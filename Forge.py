@@ -59,7 +59,15 @@ class NativeExample:
 if __name__ == '__main__':
    args = parseArgs()
    assert args.api in ('native', 'vecenv')
-   config = experiments.exps['testchaos128']
+
+   # Specify config
+   configName = ""
+   for key in experiments.exps.keys():
+      if "chaos" in key:
+         configName = key
+
+   config = experiments.exps[configName]
+   #config = experiments.exps['fishrewardchaos128']
 
    if args.api == 'native':
       example = NativeExample(config, args)
@@ -70,5 +78,5 @@ if __name__ == '__main__':
    #This will automatically set local mode with 1 core
    if args.render:
       example.env.render()
-   
+
    example.run()

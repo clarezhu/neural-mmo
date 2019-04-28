@@ -4,22 +4,23 @@ import os
 
 #Oversimplified user specification
 #for 1-3 collaborators
-USER = 'your-username'
-if USER == 'your-username':
+USER = 'clare'
+
+if USER == 'clare':
    #Thousandth
-   prefix = 'test'
+   prefix = 'fishreward0.1'
    remote = False
    local  = not remote
 
-   test = True#local
-   best = True#local
-   load = True#local
+   test = False #local, not train
+   best = False #local, if loading, use best or most recent
+   load = False #local, load previous model
 
    sample = not test
    singles = True
    tournaments = False
-   
    exps = {}
+
    szs = [128]
    #For full distributed runs
    #szs = (16, 32, 64, 128)
@@ -38,13 +39,14 @@ if USER == 'your-username':
          pass
       MODELDIR = ROOT + 'model/'
 
-      exp = conf(remote, 
-            NENT=NENT, NPOP=NPOP,
-            MODELDIR=MODELDIR,
-            SAMPLE=sample,
-            BEST=best,
-            LOAD=load,
-            TEST=test)
+      exp = conf(
+              remote,
+              NENT=NENT, NPOP=NPOP,
+              MODELDIR=MODELDIR,
+              SAMPLE=sample,
+              BEST=best,
+              LOAD=load,
+              TEST=test)
       exps[name] = exp
       print(name, ', NENT: ', NENT, ', NPOP: ', NPOP)
 
@@ -54,7 +56,7 @@ if USER == 'your-username':
          for sz in szs:
             name = prefix + label + str(sz)
             makeExp(name, conf, sz, test=test)
-          
+
    #Sample config
    makeExps()
    makeExp('sample', Chaos, 128, test=True)
