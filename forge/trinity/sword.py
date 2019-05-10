@@ -7,6 +7,7 @@ from forge.ethyr.torch.param import setParameters, zeroGrads
 from forge.ethyr.torch import optim
 from forge.ethyr.rollouts import Rollout
 
+
 class Sword:
    def __init__(self, config, args):
       self.config, self.args = config, args
@@ -25,7 +26,7 @@ class Sword:
       anns = [self.anns[idx] for idx in self.networksUsed]
 
       reward, val, grads, pg, valLoss, entropy = optim.backward(
-            self.rollouts, anns, valWeight=0.25, 
+            self.rollouts, anns, valWeight=0.25,
             entWeight=self.config.ENTROPY)
       self.grads = dict((idx, grad) for idx, grad in
             zip(self.networksUsed, grads))
@@ -39,7 +40,7 @@ class Sword:
       grads = self.grads
       self.grads = None
       return grads
- 
+
    def sendLogUpdate(self):
       blobs = self.blobs
       self.blobs = []
@@ -76,8 +77,16 @@ class Sword:
       if self.nGrads >= 100*32:
          self.backward()
 
-   def decide(self, ent, stim):
-      reward, entID, annID = 0, ent.entID, ent.annID
+   def decide(self, ent, stim, popCounts):
+      coop = True
+      scale = 0.1
+
+      # Initialize rewards to zero
+      reward, entID, annID = 1, ent.entID, ent.annID
+      if coop:
+         totalCounts = popCounts.sum()
+         reward += scale * popCounts[annID] / totalCounts
+
       action, arguments, atnArgs, val = self.anns[annID](ent, stim)
       self.collectStep(entID, atnArgs, val, reward)
       self.updates[entID].feather.scrawl(

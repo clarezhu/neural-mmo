@@ -8,7 +8,7 @@ USER = 'clare'
 
 if USER == 'clare':
    #Thousandth
-   prefix = 'fishreward0.1'
+   prefix = 'fishrets0.1lifetime'
    remote = False
    local  = not remote
 

@@ -92,7 +92,6 @@ class Quill:
          blobs += blobList
          for blob in blobList:
             rewards.append(float(blob.lifetime))
-            
       self.lifetime = np.mean(rewards)   
       blobRet = []
       for e in blobs:

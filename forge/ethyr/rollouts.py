@@ -42,7 +42,7 @@ class Rollout:
       self.rewards.append(reward)
 
    def finish(self):
-      self.rewards[-1] = -1
+      #self.rewards[-1] = -1
       self.returns = self.returnf(self.rewards)
       self.lifespan = len(self.rewards)
       self.feather.finish()
