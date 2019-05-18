@@ -10,8 +10,11 @@ import json, pickle
 import time
 import ray
 
-#Static blob analytics
+
 class InkWell:
+   """
+   Static blob analytics for figures.
+   """
    def unique(blobs):
       tiles = defaultdict(list)
       for blob in blobs:
@@ -38,30 +41,38 @@ class InkWell:
 
    def lifetime(blobs):
       return {'lifetime':[blob.lifetime for blob in blobs]}
- 
+
    def reward(blobs):
       return {'reward':[blob.reward for blob in blobs]}
-  
+
    def value(blobs):
       return {'value': [blob.value for blob in blobs]}
 
-#Agent logger
+
 class Blob:
-   def __init__(self): 
+   def __init__(self):
+      """
+      Agent logger class.
+      """
       self.unique = {Material.GRASS.value: 0,
                      Material.SCRUB.value: 0,
                      Material.FOREST.value: 0}
       self.counts = deepcopy(self.unique)
-      self.lifetime = 0
+      self.lifetime, self.reward = 0, 0
 
-      self.reward, self.ret = [], []
-      self.value, self.entropy= [], []
+      self.rewards, self.ret = [], []
+      self.value, self.entropy = [], []
       self.pg_loss, self.val_loss = [], []
 
    def finish(self):
-      self.lifetime = len(self.reward)
-      self.reward   = np.sum(self.reward)
+      """
+      Calculates lifetime as the number of reward timesteps, and reward as
+      the sum of all rewards. Value is the average of values.
+      """
+      self.lifetime = len(self.rewards)
+      self.reward   = np.sum(self.rewards)
       self.value    = np.mean(self.value)
+
 
 class Quill:
    def __init__(self, modeldir):
@@ -72,7 +83,7 @@ class Quill:
          os.remove(modeldir + 'logs.p')
       except:
          pass
- 
+
    def timestamp(self):
       cur = time.time()
       ret = cur - self.time
@@ -81,18 +92,27 @@ class Quill:
 
    def print(self):
       print(
-            'Time: ', self.timestamp(), 
+            'Time: ', self.timestamp(),
             ', Iter: ', str(self.index))
 
    def scrawl(self, logs):
-      #Collect log update
+      """
+      Collect log update from multiple logs.
+      Updates lifetime and reward to the average of blob lifetimes and rewards.
+
+      @logs: Blob
+      """
       self.index += 1
-      rewards, blobs = [], []
+      lifetimes, rewards, blobs = [], [], []
       for blobList in logs:
          blobs += blobList
          for blob in blobList:
-            rewards.append(float(blob.lifetime))
-      self.lifetime = np.mean(rewards)   
+            lifetimes.append(float(blob.lifetime))
+            rewards.append(float(blob.reward))
+
+      self.lifetime = np.mean(lifetimes)
+      self.reward = np.mean(rewards)
+
       blobRet = []
       for e in blobs:
           if np.random.rand() < 0.1:
@@ -100,7 +120,7 @@ class Quill:
       self.save(blobRet)
 
    def latest(self):
-      return self.lifetime
+      return self.lifetime, self.reward
 
    def save(self, blobs):
       with open(self.dir + 'logs.p', 'ab') as f:
@@ -129,5 +149,3 @@ class Benchmarker:
             bench = benchmark.benchmark()
             print(k.__func__.__name__, 'Tick: ', tick,
                   ', Benchmark: ', bench, ', FPS: ', 1/bench)
- 
-

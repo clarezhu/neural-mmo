@@ -65,7 +65,7 @@ class Sword:
       assert entID not in self.rollouts
       rollout = self.updates[entID]
       rollout.finish()
-      self.nGrads += rollout.lifespan
+      self.nGrads += rollout.lifetime
       self.rollouts[entID] = rollout
       del self.updates[entID]
 

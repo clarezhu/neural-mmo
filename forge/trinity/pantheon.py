@@ -62,10 +62,10 @@ class Model:
          gradAry[worker] = torch.Tensor(grad)
       self.opt.step(gradAry)
 
-   def checkpoint(self, reward):
+   def checkpoint(self, lifetime, reward):
       if self.config.TEST:
          return
-      self.saver.checkpoint(self.params, self.opt, reward)
+      self.saver.checkpoint(self.params, self.opt, lifetime, reward)
 
    def load(self, best=False):
       print('Loading model...')
@@ -76,7 +76,7 @@ class Model:
    def nParams(self):
       nParams = sum([len(e) for e in self.model])
       print('#Params: ', str(nParams/1000), 'K')
-      
+
    @property
    def model(self):
       return self.params.detach().numpy()
@@ -104,9 +104,9 @@ class Pantheon:
       self.tick += 1
 
       if not self.config.TEST:
-         lifetime = self.quill.latest()
+         lifetime, reward = self.quill.latest()
          self.net.stepOpt(recvs)
-         self.net.checkpoint(lifetime)
+         self.net.checkpoint(lifetime, reward)
          self.net.saver.print()
       else:
          self.quill.print()

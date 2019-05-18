@@ -22,8 +22,9 @@ class Saver:
       self.bestf, self.savef = bestf, savef,
       self.root, self.extn = root, '.pth'
       self.nANN = nANN
-      
+
       self.resetter = Resetter(resetTol)
+      # TODO: self.rewardAvg not used yet
       self.rewardAvg, self.best = EDA(), 0
       self.start, self.epoch = time.time(), 0
       self.resetTol = resetTol
@@ -34,15 +35,16 @@ class Saver:
               'epoch': self.epoch}
       torch.save(data, self.root + fname + self.extn) 
 
-   def checkpoint(self, params, opt, reward):
+   def checkpoint(self, params, opt, lifetime, reward):
       self.save(params, opt, self.savef)
-      best = reward > self.best
-      if best: 
-         self.best = reward
+      best = lifetime > self.best
+      if best:
+         self.best = lifetime
          self.save(params, opt, self.bestf)
 
       self.time  = time.time() - self.start
       self.start = time.time()
+      self.lifetime = lifetime
       self.reward = reward
       self.epoch += 1
 
@@ -64,6 +66,7 @@ class Saver:
       print(
             'Tick: ', self.epoch,
             ', Time: ', str(self.time)[:5],
-            ', Lifetime: ', str(self.reward)[:5],
+            ', Lifetime: ', str(self.lifetime)[:5],
+            ', Reward: ', str(self.reward)[:5],
             ', Best: ', str(self.best)[:5]) 
 

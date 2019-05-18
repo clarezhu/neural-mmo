@@ -27,7 +27,7 @@ class GymExample:
       self.envsObs = self.env.reset()
 
       #the ANN used internally by Trinity
-      from forge.trinity import ANN 
+      from forge.trinity import ANN
       self.ann = ANN(config)
 
    #Runs a single step of each environment

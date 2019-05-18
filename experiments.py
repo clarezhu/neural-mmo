@@ -7,8 +7,7 @@ import os
 USER = 'clare'
 
 if USER == 'clare':
-   #Thousandth
-   prefix = 'fishrets0.1lifetime'
+   prefix = 'fish0.1logreward'
    remote = False
    local  = not remote
 

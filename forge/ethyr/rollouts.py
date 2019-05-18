@@ -1,5 +1,5 @@
 from pdb import set_trace as T
-from itertools import chain 
+from itertools import chain
 import numpy as np
 
 from forge.blade.lib.log import Blob
@@ -12,8 +12,10 @@ def discountRewards(rewards, gamma=0.99):
    for idx in range(N): rets.append(sum(rewards[idx:]*discounts[:N-idx]))
    return rets
 
+
 def sumReturn(rewards):
    return [sum(rewards) for e in rewards]
+
 
 def mergeRollouts(rollouts):
    atnArgs = [rollout.atnArgs for rollout in rollouts]
@@ -26,6 +28,7 @@ def mergeRollouts(rollouts):
    rets    = list(chain(*rets))
 
    return atnArgs, vals, rets
+
 
 class Rollout:
    def __init__(self, returnf=discountRewards):
@@ -44,8 +47,9 @@ class Rollout:
    def finish(self):
       #self.rewards[-1] = -1
       self.returns = self.returnf(self.rewards)
-      self.lifespan = len(self.rewards)
+      self.lifetime = len(self.rewards)
       self.feather.finish()
+
 
 #Rollout logger
 class Feather:
@@ -80,9 +84,8 @@ class Feather:
       self.blob.counts[tile] += 1
 
    def stats(self, value, reward):
-      self.blob.reward.append(reward)
+      self.blob.rewards.append(reward)
       self.blob.value.append(float(value))
 
    def finish(self):
       self.blob.finish()
-
