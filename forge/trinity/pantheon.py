@@ -41,7 +41,7 @@ class Model:
    def shared(self, n):
       model = self.initModel()
       self.models = [model for _ in range(n)]
- 
+
    def unshared(self, n):
       self.models = [self.initModel() for _ in range(n)]
 
@@ -92,7 +92,7 @@ class Pantheon:
 
       self.period = 1
 
-   @property 
+   @property
    def model(self):
       return self.net.model
 

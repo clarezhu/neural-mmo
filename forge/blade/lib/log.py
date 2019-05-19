@@ -52,16 +52,19 @@ class InkWell:
 class Blob:
    def __init__(self):
       """
-      Agent logger class.
+      Agent logger class used by Quill and Inkwell. Records statistics for a
+      single entity.
       """
       self.unique = {Material.GRASS.value: 0,
                      Material.SCRUB.value: 0,
                      Material.FOREST.value: 0}
       self.counts = deepcopy(self.unique)
       self.lifetime, self.reward = 0, 0
+      self.annID = -1
 
       self.rewards, self.ret = [], []
-      self.value, self.entropy = [], []
+      self.values = []
+      self.entropy = []
       self.pg_loss, self.val_loss = [], []
 
    def finish(self):
@@ -71,10 +74,13 @@ class Blob:
       """
       self.lifetime = len(self.rewards)
       self.reward   = np.sum(self.rewards)
-      self.value    = np.mean(self.value)
+      self.value    = np.mean(self.values)
 
 
 class Quill:
+   """
+   Aggregates results from multiple blobs.
+   """
    def __init__(self, modeldir):
       self.time = time.time()
       self.dir = modeldir
@@ -92,15 +98,16 @@ class Quill:
 
    def print(self):
       print(
-            'Time: ', self.timestamp(),
-            ', Iter: ', str(self.index))
+         'Time: ', self.timestamp(),
+         ', Iter: ', str(self.index)
+      )
 
    def scrawl(self, logs):
       """
       Collect log update from multiple logs.
       Updates lifetime and reward to the average of blob lifetimes and rewards.
 
-      @logs: Blob
+      @logs: list of lists of Blobs
       """
       self.index += 1
       lifetimes, rewards, blobs = [], [], []

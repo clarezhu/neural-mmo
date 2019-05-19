@@ -203,6 +203,9 @@ class ANN(nn.Module):
             config.AUTO_TARGET else AttackNet(config))
 
    def forward(self, ent, env):
+      """
+      Decides next action based on entity and environment.
+      """
       s = torchlib.Stim(ent, env, self.config)
       val  = self.valNet(s.conv, s.flat, s.ents)
 

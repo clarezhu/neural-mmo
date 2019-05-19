@@ -12,21 +12,32 @@ class Sword:
    def __init__(self, config, args):
       self.config, self.args = config, args
       self.nANN, self.h = config.NPOP, config.HIDDEN
-      self.anns  = [trinity.ANN(config)
-            for i in range(self.nANN)]
+      self.anns  = [trinity.ANN(config) for i in range(self.nANN)]
 
-      self.init, self.nRollouts = True, 32
+      self.init = True
+
       self.networksUsed = set()
-      self.updates, self.rollouts = defaultdict(Rollout), {}
+      self.updates = defaultdict(Rollout)
+      self.rollouts = {} # starts empty, gets populated
       self.ents, self.rewards, self.grads = {}, [], None
+
+      # Ways to initiate backward:
+      # keeps track of total lifetimes, before initiating backward()
       self.nGrads = 0
+      # a threshold for the max number of Rollouts before initiating backward()
+      self.nRollouts = 32
 
    def backward(self):
+      """
+      Backward pass through optim.backward().
+      """
       ents = self.rollouts.keys()
       anns = [self.anns[idx] for idx in self.networksUsed]
 
       reward, val, grads, pg, valLoss, entropy = optim.backward(
-            self.rollouts, anns, valWeight=0.25,
+            self.rollouts,
+            anns,
+            valWeight=0.25,
             entWeight=self.config.ENTROPY)
       self.grads = dict((idx, grad) for idx, grad in
             zip(self.networksUsed, grads))
@@ -37,16 +48,25 @@ class Sword:
       self.networksUsed = set()
 
    def sendGradUpdate(self):
+      """
+      Helper for sendUpdate
+      """
       grads = self.grads
       self.grads = None
       return grads
 
    def sendLogUpdate(self):
+      """
+      Helper for sendUpdate
+      """
       blobs = self.blobs
       self.blobs = []
       return blobs
 
    def sendUpdate(self):
+      """
+      Used in forge/blade/core/realm.py to propagate updates.
+      """
       if self.grads is None:
           return None, None
       return self.sendGradUpdate(), self.sendLogUpdate()
@@ -56,12 +76,17 @@ class Sword:
          setParameters(self.anns[idx], paramVec)
          zeroGrads(self.anns[idx])
 
-   def collectStep(self, entID, atnArgs, val, reward):
+   def collectStep(self, entID, atnArgs, val, reward, stim, ent):
       if self.config.TEST:
           return
-      self.updates[entID].step(atnArgs, val, reward)
+      self.updates[entID].step(atnArgs, val, reward, stim, ent)
 
-   def collectRollout(self, entID, ent):
+   def collectRollout(self, entID, ent, backwardThres=100*32):
+      """
+      Finishes a Rollout, then moves it from self.updates to self.rollouts.
+      Initiates backward() if the total lifetimes of the rollouts is above
+      a threshold.
+      """
       assert entID not in self.rollouts
       rollout = self.updates[entID]
       rollout.finish()
@@ -72,23 +97,25 @@ class Sword:
       # assert ent.annID == (hash(entID) % self.nANN)
       self.networksUsed.add(ent.annID)
 
-      #Two options: fixed number of gradients or rollouts
-      #if len(self.rollouts) >= self.nRollouts:
-      if self.nGrads >= 100*32:
+      # Option 1: fixed number of rollouts
+      # if len(self.rollouts) >= self.nRollouts:
+      # Option 2: fixed number of gradients
+      if self.nGrads >= backwardThres:
          self.backward()
 
-   def decide(self, ent, stim, popCounts):
-      coop = True
-      scale = 0.1
-
-      # Initialize rewards to zero
-      reward, entID, annID = 1, ent.entID, ent.annID
+   def decide(self, ent, stim, popCounts, coop=True):
+      reward, entID, annID = 1.0, ent.entID, ent.annID
       if coop:
-         totalCounts = popCounts.sum()
-         reward += scale * popCounts[annID] / totalCounts
+         # Cooperation experiment: increase reward by proportion of living
+         # agents in its own population
+         coopScale = 0.1
+         totalCounts = float(popCounts.sum())
+         reward += coopScale * popCounts[annID] / totalCounts
 
+      # Decide on an action
       action, arguments, atnArgs, val = self.anns[annID](ent, stim)
-      self.collectStep(entID, atnArgs, val, reward)
-      self.updates[entID].feather.scrawl(
-            stim, ent, val, reward)
+
+      # Updates the rollout
+      self.collectStep(entID, atnArgs, val, reward, stim, ent)
+
       return action, arguments, float(val)
