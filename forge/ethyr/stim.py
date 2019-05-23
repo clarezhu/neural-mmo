@@ -1,6 +1,7 @@
 from pdb import set_trace as T
 import numpy as np
 
+
 def center(x, mmax):
    return (x - mmax/2.0)/mmax
 
@@ -24,6 +25,10 @@ def deltaOneHot(pos, stimSz):
    return oneHot(idx, int(n**2))
 
 def stats(ent, other, config):
+   """
+   Given an entity and another entity, returns statistics about itself
+   and the other entity in the form of a np.array()
+   """
    health = ent.health.center()
    food = ent.food.center()
    water = ent.water.center()
@@ -37,6 +42,8 @@ def stats(ent, other, config):
 
    #Cant use one hot colors because it causes dimensional
    #conflicts when new pops are added at test time
+
+   # NOTE: Checks if other agent is in the same population
    sameColor = float(ent.colorInd == other.colorInd) - 0.5
 
    rSelf, cSelf   = ent.pos
@@ -44,7 +51,7 @@ def stats(ent, other, config):
 
    rOther, cOther = other.pos
    rDelta, cDelta = rOther - rSelf, cOther - cSelf
-   ret = np.array([lifetime, health, food, water, 
+   ret = np.array([lifetime, health, food, water,
          r, c, rDelta, cDelta, damage, sameColor, freeze])
    return ret
 

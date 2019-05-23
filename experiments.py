@@ -7,7 +7,7 @@ import os
 USER = 'clare'
 
 if USER == 'clare':
-   prefix = 'fish0.1logreward'
+   prefix = 'fishdev'
    remote = False
    local  = not remote
 
@@ -50,12 +50,13 @@ if USER == 'clare':
       print(name, ', NENT: ', NENT, ', NPOP: ', NPOP)
 
    def makeExps():
-      #Training runs
+      # Training runs
       for label, conf in zip(names, confs):
          for sz in szs:
             name = prefix + label + str(sz)
             makeExp(name, conf, sz, test=test)
 
-   #Sample config
+
+   # Sample config
    makeExps()
-   makeExp('sample', Chaos, 128, test=True)
+   # makeExp('sample', Chaos, 128, test=True)

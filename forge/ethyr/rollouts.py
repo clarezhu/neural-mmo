@@ -43,7 +43,7 @@ class Rollout:
    def __init__(self, returnf=discountRewards):
       self.atnArgs = []
       self.values = []
-      self.rewards = []
+      #self.rewards = []
       self.pop_rewards = [] # TODO: unused
       self.returnf = returnf
       self.feather = Feather()
@@ -54,10 +54,14 @@ class Rollout:
       """
       self.atnArgs.append(atnArgs)
       self.values.append(val)
-      self.rewards.append(reward)
+      #self.rewards.append(reward)
 
       # TODO: Rollout duplicates many statistics recorded in Feather.
       self.feather.scrawl(atnArgs, val, reward, stim, ent)
+
+   @property
+   def rewards(self):
+      return self.feather.blob.rewards
 
    def finish(self):
       # self.rewards[-1] = -1 # NOTE: Something to do with numerical stability.
@@ -110,7 +114,7 @@ class Feather:
 
    def stats(self, value, reward):
       self.blob.rewards.append(reward)
-      self.blob.values.append(float(value))
+      self.blob.values.append(float(value)) # convert from Tensor to float
 
    def finish(self):
       self.blob.finish()

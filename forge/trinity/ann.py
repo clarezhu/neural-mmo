@@ -192,6 +192,7 @@ class AttackNet(nn.Module):
       attkOuts = ((atn, atnIdx), (arg, argIdx))
       return action, [argument], attkOuts
 
+
 class ANN(nn.Module):
    def __init__(self, config):
       super().__init__()
